@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css" type="text/css">
+  <title>App de Registro</title>
+</head>
+<body>
+  <h1>Registro</h1>
+  <div class="student">
+    <form id="studentForm">
+        <label>Nombre:</label><br>
+        <input
+          type="text"
+          id="name"
+          placeholder="Ingrese su nombre"
+          required
+        >
+        <br><br>
+
+        <label for="id">Identificación:</label><br>
+        <select name="id" id="id">
+          <option value="V-">V-</option>
+          <option value="E-">E-</option>  
+        </select>
+
+        <input
+          type="number"
+          id="numberID"
+          placeholder="Su cédula acá"
+          min=""
+          step="1"
+          required
+        ><br><br>
+        
+        <label for="birthday">Fecha de Nacimiento (Día-mes-año)</label><br>
+        <input
+          id="birthday"
+          type="date"
+          min="01-01-1920"
+          required
+        > <br><br>
+
+        <label for="sex">Sexo</label>
+        <select name="sex" id="sex">
+          <option value="Hombre">Hombre</option>
+          <option value="Mujer">Mujer</option>
+        </select><br><br>
+        
+        <label>Dirección</label><br>
+        <input
+          type="text"
+          name=""
+          id="address"
+          placeholder="Dirección"
+          required
+        > <br><br>
+
+        <label for="semester">Semestre</label>
+        <select name="semester" id="semester">
+          <option value="1ero">1er Semestre</option>
+          <option value="2do">2do Semestre</option>
+          <option value="3ero">3er Semestre</option>
+          <option value="4to">4to Semestre</option>
+          <option value="5to">5to Semestre</option>
+          <option value="6to">6to Semestre</option>
+          <option value="7mo">7mo Semestre</option>
+          <option value="8vo">8vo Semestre</option>
+          <option value="9no">9no Semestre</option>
+          <option value="10mo">10mo Semestre</option>
+        </select><br><br>
+        <div id="errorMessage"></div>
+          <input type="submit" value="Guardar" id="addStudent">
+    </form> 
+    <div id="form">
+    <table>
+      <thead>
+        <tr id="studentInfoRow"></tr>
+      </thead>
+      <tbody id="studentsRow"></tbody>
+    </table>
+  </div>
+
+  <div id="studentFullInfo">
+
+  </div>
+  </div>
+
+
+  <script>
+    var students = [];
+    document.getElementById('addStudent').addEventListener("click", saveStudent);
+
+    //Guardo informacion suministrada
+    function saveStudent(event) {
+      event.preventDefault();
+      let name = document.getElementById('name').value;
+      let id = document.getElementById('id').value;
+      let numberID = document.getElementById('numberID').value;
+      let birthday = document.getElementById('birthday').value;
+      let sex = document.getElementById('sex').value;
+      let address = document.getElementById('address').value;
+      let semester = document.getElementById('semester').value;
+
+      let errorMessage = document.getElementById("errorMessage");
+      if (
+        name == "" ||
+        numberID == "" ||
+        birthday == "" ||
+        address == ""
+      ){
+        errorMessage.innerHTML = 
+        `
+        <p id="errorMessage--Info">Debes rellenar todos los campos</p>
+        `
+      }else{
+        errorMessage.textContent= "";
+        let studentsObject = {
+          'name': name,
+          'id': id,
+          'numberID': numberID,
+          'birthday': birthday,
+          'sex': sex,
+          'address': address,
+          'semester': semester
+        }
+      students.push(studentsObject);
+      //Verifico que NO esté creado el elemento HTML donde estará el encabezado de mi tabla
+      if (!document.getElementById('studentInfoRow').hasChildNodes()){
+        createTable()
+      }
+      studentsRow();
+      cleanRegister();
+      console.log(students)
+      }
+    }
+
+    //Cálculo de edad
+    function calculateAge(birthday){
+      var today = new Date();
+      /* 
+        Chequeo que el dia de hoy y el mes, sean menores al dia y mes de su nacimiento
+        para restarle 1, porque aun no cumple años
+      */
+      if (today.getMonth() && today.getDay() < birthday.getMonth() && birthday.getDay() ){
+        return age = today.getFullYear() - birthday.getFullYear() -1
+      }else{
+        return age = today.getFullYear() - birthday.getFullYear()
+      }
+    }
+    
+    //Relleno la tabla con los datos suministrados
+    function studentsRow(){
+      let studentsRow = document.getElementById("studentsRow");
+      let studentsLength = students.length;
+      let i = 0;
+      //Al volverse a llamar la funcion, debo limpiar las columnas porque sino se duplicarían registros
+      studentsRow.innerHTML = ""
+      for (i; i < studentsLength ; i++){
+        let birthday = new Date(students[i].birthday)
+        calculateAge(birthday);
+        studentsRow.innerHTML += 
+        `
+        <td class="studentRowInfo">${students[i].name}</td>
+        <td class="studentRowInfo">${students[i].id}${students[i].numberID}</td>
+        <td class="studentRowInfo">${age}</td>
+        <td class="studentRowInfo">${students[i].sex}</td>
+        <td class="studentRowInfo flex">
+          <button class="btn-show" onclick="showStudentFullInfo('${students[i].numberID}')">Ver</button>
+          <button class="btn-delete" onclick="deleteStudentRecord('${students[i].numberID}')">Eliminar</button>
+        </td>
+        `
+      }
+    }
+    
+    //Borro elemento del array
+    function deleteStudentRecord(numberID){
+      closeStudentInfo();
+      let studentsLength = students.length
+      let i = 0
+      for (i; i<studentsLength; i++) {
+        students[i].numberID === numberID ? students.pop() : null
+      }
+      studentsRow();
+      //Si el array se vacea, elimino el nombre de las columnas
+      if (studentsLength === 1 ){
+        var rowList = document.getElementById("studentInfoRow");
+        rowList.textContent = "";
+      }
+    }
+
+    //Muestro informacion completa del registro
+    function showStudentFullInfo(numberID){
+      var studentCard = document.getElementById("studentFullInfo");
+     let studentsLength = students.length
+     for(let i = 0; i<studentsLength; i++){
+       students[i].numberID === numberID ?
+        studentInfo = students[i] :
+        null
+     }
+     let birthday = new Date(studentInfo.birthday);
+     calculateAge(birthday)
+     studentCard.innerHTML = 
+      `
+      <div id="studentFullInfo--card">
+        <label>Nombre: ${studentInfo.name}</label><br>
+        <label>Identificación: ${studentInfo.id}${studentInfo.numberID}</label><br> 
+        <label>Fecha de Nacimiento: ${studentInfo.birthday}</label><br> 
+        <label>Edad: ${age}</label><br> 
+        <label>Sexo: ${studentInfo.sex}</label><br> 
+        <label>Dirección: ${studentInfo.address}</label><br>
+        <label>Semestre: ${studentInfo.semester}</label><br>
+        <button class="studentFullInfo--card__btn"
+          onclick="closeStudentInfo('${studentCard}')">Cerrar
+        </button>
+      </div>
+      `
+    }
+
+    function closeStudentInfo(){
+      var studentCard = document.getElementById("studentFullInfo");
+      studentCard.innerHTML = ""
+    }
+    //Crear encabezado de la tabla
+    function createTable(){
+      for ( let i =0 ; i<5; i++){
+       let th = document.createElement("th");
+       switch (i) {
+        case 0:
+          var information = "Nombre"
+          break;
+        case 1:
+          var information = "Identificación"
+          break;
+        case 2:
+          var information = "Edad"
+          break;
+        case 3:
+          var information = "Sexo"
+          break;
+        case 4:
+          var information = "Opciones"
+          break;
+        default :
+          break;
+       }
+        var node = document.createTextNode(information);
+        th.appendChild(node);
+        var element = document.getElementById("studentInfoRow");
+        element.appendChild(th);
+      }
+    }
+    
+    //Vacía los datos ingresados en el <form>
+   function cleanRegister() {
+     document.getElementById("name").value ="";
+     document.getElementById("id").value="V-";
+     document.getElementById("numberID").value="";
+     document.getElementById("birthday").value="yyyy-MM-dd";
+     document.getElementById("sex").value="Hombre";
+     document.getElementById("address").value="";
+     document.getElementById("semester").value="1ero";
+   } 
+
+  </script>
+</body>
+</html>
